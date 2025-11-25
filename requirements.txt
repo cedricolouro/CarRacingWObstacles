@@ -1,3 +1,4 @@
+swig
 pygame
 box2d-py
 gymnasium
