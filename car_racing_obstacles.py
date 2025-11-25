@@ -7,6 +7,7 @@ import gymnasium as gym
 from gymnasium.envs.box2d import car_racing as base_cr
 from car_racing import CarRacing as BaseCarRacing
 from car_dynamics import Car
+import random
 
 try:
     import Box2D
@@ -110,7 +111,7 @@ class CarRacingObstacles(BaseCarRacing):
         self.offroad_terminate_penalty = 50.0  # extra negative when terminating
 
         # reward when moving on track
-        self.moving_reward_scale = 5.0         # tune this
+        self.moving_reward_scale = 0.1         # tune this
         self.min_moving_speed = 1.0            # only reward if speed above this
 
         # internal state
@@ -167,6 +168,8 @@ class CarRacingObstacles(BaseCarRacing):
         # Destroy previous extras first
         self._destroy_extras()
 
+        if seed==None:
+            seed = random.randint(11, 65556)
         obs, info = super().reset(seed=seed, options=options)
 
         # Build cached track centerline arrays
@@ -230,8 +233,11 @@ class CarRacingObstacles(BaseCarRacing):
     def _create_trees(self) -> None:
         if not hasattr(self, "track") or len(self.track) == 0:
             return
+        
+        num = self.n_mountains
+        if num <= 0:
+            return
 
-        num = max(3, self.n_mountains)  # same scale as mountains
         indices = np.linspace(0, len(self.track) - 1, num=num, endpoint=False, dtype=int)
 
         for idx in indices:
@@ -389,7 +395,7 @@ class CarRacingObstacles(BaseCarRacing):
         # ---- 4) Per-step reward when on track and moving ----
         if speed > self.min_moving_speed and on_track:
             # reward ~ speed * time, tune scale
-            reward += self.moving_reward_scale * speed * dt
+            reward += self.moving_reward_scale# counter the constant -0.1 if the robot is moving * speed * dt
             info["moving_on_track"] = True
         else:
             info["moving_on_track"] = False
@@ -410,6 +416,7 @@ class CarRacingObstacles(BaseCarRacing):
         # ---- 6) Update dynamic obstacles and ghost car after physics ----
         self._update_dynamic_obstacles()
         self._update_ghost()
+        self.reward =reward
 
         return obs, reward, terminated, truncated, info
 
