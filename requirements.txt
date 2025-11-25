@@ -1,5 +1,5 @@
 swig
 pygame
 box2d-py
-gymnasium==0.29
+gymnasium
 numpy
