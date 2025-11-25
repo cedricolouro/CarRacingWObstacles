@@ -416,7 +416,7 @@ class CarRacingObstacles(BaseCarRacing):
         # ---- 6) Update dynamic obstacles and ghost car after physics ----
         self._update_dynamic_obstacles()
         self._update_ghost()
-        self.reward =reward
+        self.reward +=reward
 
         return obs, reward, terminated, truncated, info
 
