@@ -49,10 +49,36 @@ WHEEL_COLOR = (0, 0, 0)
 WHEEL_WHITE = (77, 77, 77)
 MUD_COLOR = (102, 102, 0)
 
+ 
+
+
+
+
+
+# Lights (pygame uses 0–255 ints; we'll keep them as ints here)
+HEADLIGHT_COLOR = (255, 255, 220)
+TAILLIGHT_COLOR = (44, 44, 44)
+
 
 class Car:
-    def __init__(self, world, init_angle, init_x, init_y):
+    def __init__(self, world, init_angle, init_x, init_y, ghost=False):
         self.world: Box2D.b2World = world
+        # Assign per-fixture colors via userData, but keep same hull structure
+
+
+        if ghost:
+            self.HULL_MAIN_COLOR = ( 1.00, 0.604, 0.604 )         # main body
+            self.HULL_FRONT_COLOR = (1.00, 0.306, 0.306 )        # front hood
+            self.HULL_SIDE_COLOR = (1.00, 0.104, 0.104   )         # rear / lower panels
+            self.HULL_ROOF_COLOR = (0.15, 0.20, 0.35)      # windshield / roof (tinted glass)
+
+        else:
+            self.HULL_MAIN_COLOR = ( 0.082, 0.4, 1.0)         # main body
+            self.HULL_FRONT_COLOR = (0.082, 0.4, 1.0)        # front hood
+            self.HULL_SIDE_COLOR = (0.478, 0.384, 1.0  )         # rear / lower panels
+            self.HULL_ROOF_COLOR = (0.15, 0.20, 0.35)      # windshield / roof (tinted glass)
+
+
         self.hull: Box2D.b2Body = self.world.CreateDynamicBody(
             position=(init_x, init_y),
             angle=init_angle,
@@ -62,28 +88,34 @@ class Car:
                         vertices=[(x * SIZE, y * SIZE) for x, y in HULL_POLY1]
                     ),
                     density=1.0,
+                    userData={"color": self.HULL_FRONT_COLOR},
                 ),
                 fixtureDef(
                     shape=polygonShape(
                         vertices=[(x * SIZE, y * SIZE) for x, y in HULL_POLY2]
                     ),
                     density=1.0,
+                    userData={"color": self.HULL_ROOF_COLOR},
                 ),
                 fixtureDef(
                     shape=polygonShape(
                         vertices=[(x * SIZE, y * SIZE) for x, y in HULL_POLY3]
                     ),
                     density=1.0,
+                    userData={"color": self.HULL_MAIN_COLOR},
                 ),
                 fixtureDef(
                     shape=polygonShape(
                         vertices=[(x * SIZE, y * SIZE) for x, y in HULL_POLY4]
                     ),
                     density=1.0,
+                    userData={"color": self.HULL_SIDE_COLOR},
                 ),
             ],
         )
-        self.hull.color = (0.8, 0.0, 0.0)
+        # Keep hull.color API as before (base body color)
+        self.hull.color = self.HULL_MAIN_COLOR
+
         self.wheels = []
         self.fuel_spent = 0.0
         WHEEL_POLY = [
@@ -267,6 +299,7 @@ class Car:
 
     def draw(self, surface, zoom, translation, angle, draw_particles=True):
         import pygame.draw
+        import pygame
 
         if draw_particles:
             for p in self.particles:
@@ -282,6 +315,7 @@ class Car:
                     surface, color=p.color, points=poly, width=2, closed=False
                 )
 
+        # Draw hull and wheels polygons
         for obj in self.drawlist:
             for f in obj.fixtures:
                 trans = f.body.transform
@@ -295,10 +329,17 @@ class Car:
                     )
                     for coords in path
                 ]
-                color = [int(c * 255) for c in obj.color]
 
+                # Use per-fixture color if available (for hull), otherwise obj.color
+                base_color = obj.color
+                if hasattr(f, "userData") and isinstance(f.userData, dict):
+                    if "color" in f.userData:
+                        base_color = f.userData["color"]
+
+                color = [int(c * 255) for c in base_color]
                 pygame.draw.polygon(surface, color=color, points=path)
 
+                # Wheel white stripe (unchanged)
                 if "phase" not in obj.__dict__:
                     continue
                 a1 = obj.phase
@@ -333,6 +374,41 @@ class Car:
                     for coords in white_poly
                 ]
                 pygame.draw.polygon(surface, color=WHEEL_WHITE, points=white_poly)
+
+        # Draw simple headlights and taillights on the hull (approximate positions)
+        trans_hull = self.hull.transform
+
+        # Front lights (two points near the front bumper)
+        front_local = [(-30 * SIZE, 130 * SIZE), (30 * SIZE, 130 * SIZE)]
+        for lx, ly in front_local:
+            wx, wy = trans_hull * (lx, ly)
+            v = pygame.math.Vector2((wx, wy)).rotate_rad(angle)
+            px = v[0] * zoom + translation[0]
+            py = v[1] * zoom + translation[1]
+            pygame.draw.circle(surface, HEADLIGHT_COLOR, (int(px), int(py)), 3)
+
+        # ----- Rear lights (brighten on brake) -----
+        # brake_factor = max brake among wheels
+        brake_factor = max(w.brake for w in self.wheels)
+
+ 
+ 
+
+        bright_taillight = (255, 11, 11)
+
+        # two rear lights
+        rear_local = [(-30 * SIZE, -120 * SIZE), (30 * SIZE, -120 * SIZE)]
+        for lx, ly in rear_local:
+            wx, wy = trans_hull * (lx, ly)
+            v = pygame.math.Vector2((wx, wy)).rotate_rad(angle)
+            px = v[0] * zoom + translation[0]
+            py = v[1] * zoom + translation[1]
+
+            # Choose either base or bright depending on brake
+            pygame.draw.circle(surface,
+                               bright_taillight if brake_factor > 0 else TAILLIGHT_COLOR,
+                               (int(px), int(py)),
+                               3)
 
     def _create_particle(self, point1, point2, grass):
         class Particle:

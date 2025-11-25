@@ -6,7 +6,7 @@ import numpy as np
 
 import gymnasium as gym
 from gymnasium import spaces
-from gymnasium.envs.box2d.car_dynamics import Car
+from car_dynamics import Car
 from gymnasium.error import DependencyNotInstalled, InvalidAction
 from gymnasium.utils import EzPickle
 
@@ -290,8 +290,8 @@ class CarRacing(gym.Env, EzPickle):
         else:
             # default colours
             self.road_color = np.array([102, 102, 102])
-            self.bg_color = np.array([102, 204, 102])
-            self.grass_color = np.array([102, 230, 102])
+            self.bg_color = np.array([197,220,194])
+            self.grass_color = np.array([185,213,188])
 
     def _reinit_colors(self, randomize):
         assert (

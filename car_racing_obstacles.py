@@ -416,7 +416,6 @@ class CarRacingObstacles(BaseCarRacing):
         # ---- 6) Update dynamic obstacles and ghost car after physics ----
         self._update_dynamic_obstacles()
         self._update_ghost()
-        self.reward +=reward
 
         return obs, reward, terminated, truncated, info
 
@@ -664,13 +663,8 @@ class CarRacingObstacles(BaseCarRacing):
             self.world,
             beta0,
             x0 + offset * math.cos(beta0),
-            y0 + offset * math.sin(beta0),
+            y0 + offset * math.sin(beta0),True
         )
-
-        # Adjust ghost colors for better contrast
-        self.ghost_car.hull.color = (0.25, 0.25, 0.9)
-        for w in self.ghost_car.wheels:
-            w.color = (0.6, 0.6, 1.0)
 
         # Cache wheel positions in the hull's local frame so we can move them
         self._ghost_wheel_local = []
@@ -694,7 +688,7 @@ class CarRacingObstacles(BaseCarRacing):
                 return
 
             # Advance ghost along tiles at constant "tile velocity"
-            self.ghost_progress += self.ghost_speed_tiles_per_sec * (2.0 / FPS)
+            self.ghost_progress += self.ghost_speed_tiles_per_sec * (4.0 / FPS)
             idx = int(self.ghost_progress) % len(self.track)
             _, beta, x, y = self.track[idx]
 
