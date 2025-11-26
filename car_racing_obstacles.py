@@ -92,6 +92,9 @@ class CarRacingObstacles(BaseCarRacing):
         self._track_x = None
         self._track_y = None
 
+        self.currentIters=0
+        self.maxIters=1000
+
         # ---- rule / reward parameters ----
         # Static obstacle collision: big negative + episode end
         self.static_collision_penalty = 200.0
@@ -183,6 +186,8 @@ class CarRacingObstacles(BaseCarRacing):
         # Reset timers
         self.still_time = 0.0
         self.offroad_time = 0.0
+        self.currentIters=0
+
 
         # Create extras
         self._create_mountains()
@@ -416,6 +421,9 @@ class CarRacingObstacles(BaseCarRacing):
         # ---- 6) Update dynamic obstacles and ghost car after physics ----
         self._update_dynamic_obstacles()
         self._update_ghost()
+        self.currentIters=self.currentIters+1
+        if self.currentIters>=self.maxIters and truncated==False:
+            terminated=True
 
         return obs, reward, terminated, truncated, info
 
