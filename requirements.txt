@@ -1,5 +1,5 @@
 swig
 pygame
-box2d-py
+box2d
 gymnasium
 numpy
