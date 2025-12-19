@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: car_racing_obstacles
+Version: 0.1.0
+Summary: Extended CarRacing-v3 environment with obstacles, mountains, and ghost car.
+Author: APA2025 - LG
+Requires-Dist: gymnasium
+Requires-Dist: box2d
+Requires-Dist: pygame
+Requires-Dist: numpy
+Dynamic: author
+Dynamic: requires-dist
+Dynamic: summary
