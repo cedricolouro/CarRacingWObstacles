@@ -55,10 +55,10 @@ class CarRacingObstacles(BaseCarRacing):
         lap_complete_percent: float = 0.95,
         domain_randomize: bool = False,
         continuous: bool = True,
-        n_static_obstacles: int = 5,
-        n_dynamic_obstacles: int = 5,
+        n_static_obstacles: int = 0,
+        n_dynamic_obstacles: int = 0,
         n_mountains: int = 0,
-        use_ghost: bool = True,
+        use_ghost: bool = False,
         obstacle_scale: float = 0.1,
     ):
         super().__init__(
