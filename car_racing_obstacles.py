@@ -511,7 +511,8 @@ class CarRacingObstacles(BaseCarRacing):
             if not placed and self.verbose:
                 print(f"[CarRacingObstacles] Could not place mountain around tile {idx}")
             else:
-                print(f"[CarRacingObstacles] Placed mountain around tile {idx}")
+                #print(f"[CarRacingObstacles] Placed mountain around tile {idx}")
+                pass
 
 
     # --------------------------------------------------------------------------
