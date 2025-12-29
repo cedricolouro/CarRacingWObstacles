@@ -97,7 +97,7 @@ class CarRacingObstacles(BaseCarRacing):
 
         # ---- rule / reward parameters ----
         # Static obstacle collision: big negative + episode end
-        self.static_collision_penalty = 200.0
+        self.static_collision_penalty = 500.0
         self.car_collision_radius = 2.5  # approx radius of the car in world units
 
         # "Stopped" logic (anywhere)
